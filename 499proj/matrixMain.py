@@ -16,14 +16,15 @@ from sklearn.feature_extraction import DictVectorizer
 import copy
 
 def pre_processing(list):
-    # 导入用来删除停用词和stemming的包
+    # Import the package used to delete stop words and stemming
     porter_stemmer = PorterStemmer()
     lemmatizer = WordNetLemmatizer()
     sr = stopwords.words('english')
     sr_append = ["rt", "http", "com", ]
-    # 用re正则表达式删除网页
+    # Use re expression to delete web pages
     results = re.compile(r'[http|https]*://[a-zA-Z0-9.?/&=:]*', re.S)
-    # 这里就是删除停用词，做lemmatize，做stem，做分词的地方，word_tokenize就是分词
+    # Here is the place to delete stop words, do lemmatize, do stem, do word segmentation,
+    # word_tokenize is word segmentation
 
     sentences = list.lower()
     grammar = "NP: {<DT>?<JJ>*<NN>|<NNP>*}"
@@ -77,15 +78,15 @@ if __name__ == '__main__':
     nltk.download('wordnet')
     nltk.download('averaged_perceptron_tagger')
     numpy.set_printoptions(threshold=sys.maxsize)
-    #显示所有列
+    #Show all columns
     pd.set_option('display.max_columns', None)
     #显示所有行
     pd.set_option('display.max_rows', None)
-    #设置value的显示长度为100，默认为50
+    #Set the display length of value to 100, the default is 50
     pd.set_option('max_colwidth',30)
 
     con_engine = create_engine('mysql+pymysql://root:@localhost/499db2?charset=utf8')
-    # 数据库的设置
+    # Database settings
     sql_ = 'select * from zctweets;'
     df_data = pd.read_sql_query(sql_, con_engine)
 
@@ -97,23 +98,24 @@ if __name__ == '__main__':
     del df_data['in_reply_to_status_id_str']
     del df_data['retweet_count']
     del df_data['favorite_count']
-    # 删除无用的列
+    # Delete useless columns
 
     df_sort = df_data.sort_values('userid_str')
-    # 按照userid 进行排序，相当于自动分类了
+    # Sort by userid, which is equivalent to automatic classification
     user_list = df_sort['userid_str'].to_list() # 变成列表方便
     time_list = df_sort['created_at'].to_list()
     text_list = df_sort['text'].to_list()
 
-    time_list = [i.date() for i in time_list] # 这里就把所有的时间都变成日期了
+    # Turn all the time into a date
+    time_list = [i.date() for i in time_list]
 
-    # 初始化一些列表
+    # Initialize some lists
     user_result = []
     time_result = []
     text_result = []
 
     aready = []
-    # 这里的目的就是按照每个id进行分类，把时间，文本填好
+    #Classify according to each id, fill in the time and text
 
     for i in range(len(user_list)) :
         if i not in aready:
@@ -147,27 +149,27 @@ if __name__ == '__main__':
 
 
 
-    # 设置sparse=False获得numpy ndarray形式的结果
+    # Set sparse=False to get the result in the form of numpy ndarray
     v = DictVectorizer(sparse=False)
     word_pre = []
     all_word = []
-    # 对text进行处理
-    # 把同一个user的text放在一起
+    # Process text
+    # Put the text of the same user together
     for i in range(len(text_clean_list)):
         for j in range(len(text_clean_list[i])):
             for z in text_clean_list[i][j]:
                 all_word.append(z)
     # print(all_word)
-    # 对每个单词进行去重
+    # Remove duplicate words
     all_word = set(all_word)
     tem_dict = {}
-    # 用字典的形式存储好单词，word做key，频率做value
+    # Store words in the form of a dictionary, word as key, frequency as value
     for i in all_word:
         tem_dict[i] = 0
 
     #
     for i in range(len(text_clean_list)):
-        # 这里要做深拷贝，防止改变原始数据
+        # Make a deep copy to prevent changing the original data
         tem_dict_i = copy.deepcopy(tem_dict)
         for j in range(len(text_clean_list[i])):
             for z in text_clean_list[i][j]:
@@ -180,15 +182,15 @@ if __name__ == '__main__':
     df_tem_1['word_pre'] = word_pre
 
 
-    # 去重
+    # De-duplication
     user_id_set = set(df_tem_1['user_id'].to_list())
     text_list_2 = []
     word_freq = []
     # list of key
     first_pre = list(df_tem_1['word_pre'][0].keys())
 
-    # 处理df_tem_2
-    # 主要做的是把同一个user的所有时间的都放在一起
+    # Process df_tem_2
+    # Put all the time of the same user together
 
     for user in user_id_set:
         # user_id column in dataframe

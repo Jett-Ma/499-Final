@@ -5,7 +5,6 @@ import pymysql
 
 
 # Import CSV
-# 改csv路径
 
 data = pd.read_csv(r'./doc/tweets_s.csv')
 df = pd.DataFrame(data, columns=['id','userid_str', 'screen_name','created_at','source','in_reply_to_status_id_str','in_reply_to_screen_name', 'retweet_count','favorite_count','text'])
@@ -13,14 +12,12 @@ df = df.replace({np.nan: None})
 # id,userid_str,screen_name,created_at,source,in_reply_to_status_id_str,in_reply_to_screen_name,retweet_count,favorite_count,text
 
 # Connect to SQL Server
-# 改dbname
 
 conn = pymysql.connect(host="localhost", user="root", passwd="", database="499_s")
 cursor = conn.cursor()
 
 
 # Create Table
-# 打开自己的数据库，看怎么改
 
 cursor.execute('DROP TABLE IF EXISTS `zctweets_s`;')
 cursor.execute('CREATE TABLE `499_s`.`zctweets_s` ( `id` BIGINT(20) , `userid_str` BIGINT(20) NOT NULL, `screen_name` TEXT ,`created_at` TIMESTAMP  ,`source` TEXT , `in_reply_to_status_id_str` BIGINT(20), `in_reply_to_screen_name` TEXT, `retweet_count` INT, `favorite_count` INT , `text` TEXT '
